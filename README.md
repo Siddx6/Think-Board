@@ -79,7 +79,6 @@ Backend runs on: `http://localhost:5001`
 # Deployment
 
 * Backend: Render
-* Frontend: Vercel
 * Database: MongoDB Atlas
 
 
