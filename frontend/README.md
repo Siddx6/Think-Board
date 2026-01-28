@@ -49,30 +49,13 @@ This project was built while learning backend development and demonstrates real�
 6. Protected routes verify token via middleware
 7. Invalid or expired token → automatic logout
 
-## ▶️ Running Locally
-
-### Backend
-
-```
-cd backend
-npm install
-npm run dev
-```
-
-### Frontend
-
-```
-cd frontend
-npm install
-npm run dev
-```
 
 Frontend runs on: `http://localhost:5173`
 Backend runs on: `http://localhost:5001`
 
 ---
 
-## 📡 API Endpoints
+##  API Endpoints
 
 ### Auth
 
