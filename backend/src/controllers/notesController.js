@@ -1,31 +1,34 @@
 import Note from "../models/Note.js";
-import mongoose from "mongoose";
 
-// GET all notes (USER-SPECIFIC)
-export async function getAllNotes(req, res) {
+/**
+ * GET ALL NOTES
+ */
+export const getAllNotes = async (req, res) => {
   try {
-    const notes = await Note.find({ user: req.user.id })
-      .sort({ createdAt: -1 });
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
+    const notes = await Note.find({ user: req.user._id });
     res.status(200).json(notes);
   } catch (error) {
     console.error("Error in getAllNotes controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Server error" });
   }
-}
+};
 
-// GET single note by ID (USER-SPECIFIC)
-export async function getAllNoteById(req, res) {
+/**
+ * GET NOTE BY ID
+ */
+export const getAllNoteById = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid note ID" });
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     const note = await Note.findOne({
-      _id: id,
-      user: req.user.id,
+      _id: req.params.id,
+      user: req.user._id,
     });
 
     if (!note) {
@@ -34,86 +37,82 @@ export async function getAllNoteById(req, res) {
 
     res.status(200).json(note);
   } catch (error) {
-    console.error("Error in getNoteById controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error in getAllNoteById controller", error);
+    res.status(500).json({ message: "Server error" });
   }
-}
+};
 
-// CREATE note (ATTACH USER)
-export async function createNote(req, res) {
+/**
+ * CREATE NOTE
+ */
+export const createNote = async (req, res) => {
   try {
-    const { title, content } = req.body;
-
-    if (!title || !content) {
-      return res.status(400).json({
-        message: "Title and content are required",
-      });
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
+
+    const { title, content } = req.body;
 
     const note = await Note.create({
       title,
       content,
-      user: req.user.id,
+      user: req.user._id,
     });
 
     res.status(201).json(note);
   } catch (error) {
     console.error("Error in createNote controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Server error" });
   }
-}
+};
 
-// UPDATE note (OWNER ONLY)
-export async function updateNote(req, res) {
+/**
+ * UPDATE NOTE
+ */
+export const updateNote = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid note ID" });
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const note = await Note.findOne({
-      _id: id,
-      user: req.user.id,
-    });
+    const note = await Note.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      req.body,
+      { new: true }
+    );
 
     if (!note) {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    note.title = req.body.title || note.title;
-    note.content = req.body.content || note.content;
-
-    const updatedNote = await note.save();
-    res.status(200).json(updatedNote);
+    res.status(200).json(note);
   } catch (error) {
     console.error("Error in updateNote controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Server error" });
   }
-}
+};
 
-// DELETE note (OWNER ONLY)
-export async function deleteNote(req, res) {
+/**
+ * DELETE NOTE
+ */
+export const deleteNote = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid note ID" });
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const note = await Note.findOne({
-      _id: id,
-      user: req.user.id,
+    const note = await Note.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id,
     });
 
     if (!note) {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    await note.deleteOne();
     res.status(200).json({ message: "Note deleted successfully" });
   } catch (error) {
     console.error("Error in deleteNote controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Server error" });
   }
-}
+};
